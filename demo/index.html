@@ -1,0 +1,42 @@
+<script src="../dist/postman.min.js"></script>
+
+<iframe id="iframe1" src="iframe.html" sandbox="allow-scripts" frameborder="0"></iframe>
+<iframe id="iframe2" src="iframe.html" sandbox="allow-scripts" frameborder="0"></iframe>
+
+<script>
+    var iframe1 = document.getElementById('iframe1');
+    var iframe2 = document.getElementById('iframe2');
+
+    var client1 = postman.createClient(iframe1.contentWindow, '*');
+    var client2 = postman.createClient(iframe2.contentWindow, '*');
+
+    client1.on('child-to-parent-message-without-data', function() {
+        console.log('Client #1: child-to-parent-message-without-data');
+    });
+
+    client2.on('child-to-parent-message-without-data', function() {
+        console.log('Client #2: child-to-parent-message-without-data');
+    });
+
+    client1.on('child-to-parent-message-wdata', function(data) {
+        console.log('Client #1: child-to-parent-message-wdata', data);
+    });
+
+    client1.on('child-to-parent-message-wcallback', function(data, done) {
+        console.log('Client #1: child-to-parent-message-wcallback', data);
+        // setTimeout(function() {
+            done(null, 'Oldu kanka!');
+        // }, 6000);
+    });
+
+    client1.on('child-to-parent-deneme', function(data, done) {
+        done('Falan filan');
+    });
+
+    setTimeout(function() {
+        client1.emit('parent-to-child', {hello: 'world'});
+        client1.emit('parent-to-child-callback', {helloSiki: 'worldGotu'}, function(err, data) {
+            console.log('Child #1: parent-to-child-callback', err, data);
+        });
+    }, 1000);
+</script>

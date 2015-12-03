@@ -1,0 +1,29 @@
+{
+  "name": "postman-js",
+  "description": "Socket.io inspired postMessage library.",
+  "main": "src/postman.js",
+  "authors": [
+    "Deniz Gurkaynak <dgurkaynak@gmail.com>",
+    "Yagiz Nizipli <yagiznizipli@me.com>"
+  ],
+  "license": "MIT",
+  "moduleType": [],
+  "homepage": "https://github.com/dgurkaynak/postman.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dgurkaynak/postman.js.git"
+  },
+  "keywords": [
+    "postmessage",
+    "iframe",
+    "post",
+    "message"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

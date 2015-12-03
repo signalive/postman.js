@@ -1,0 +1,21 @@
+<script src="../dist/postman.min.js"></script>
+<script>
+    var client = postman.createClient(window.top, '*');
+
+    client.emit('child-to-parent-message-without-data');
+    client.emit('child-to-parent-message-wdata', {some: 'data'});
+    client.emit('child-to-parent-message-wcallback', {some2: 'data2'}, function(err, data) {
+        console.log('Child: child-to-parent-message-with-callback: ', err, data);
+    });
+    client.emit('child-to-parent-message-wdata', {some: 'other data'});
+    client.emit('child-to-parent-deneme');
+
+    client.on('parent-to-child', function(data) {
+        console.log('Child: parent-to-child', data);
+    });
+    client.on('parent-to-child-callback', function(data, done) {
+        console.log('Child: parent-to-child-callback', data);
+        done(null, {anani: 's2m'});
+    });
+
+</script>
