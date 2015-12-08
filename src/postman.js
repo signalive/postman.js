@@ -47,7 +47,7 @@
 
 
     /**
-     *
+     * Creates a message.
      * @param {Object=} opt_data
      * @return {Message}
      */
@@ -57,7 +57,7 @@
 
 
     /**
-     *
+     * Creates message from event object.
      * @param {Event} e
      * @return {Message}
      */
@@ -107,7 +107,7 @@
 
 
     /**
-     *
+     * Main send message method.
      * @param {Message} message
      */
     Client.prototype.sendMessage = function(message) {
@@ -116,7 +116,7 @@
 
 
     /**
-     *
+     * Emits.
      * @param {string} name
      * @param {?Object=} opt_data
      * @param {Function} opt_callback
@@ -145,7 +145,7 @@
 
 
     /**
-     *
+     * Binds a handler to event.
      * @param {string} name
      * @param {Function} handler
      */
@@ -155,12 +155,15 @@
 
 
     /**
-     *
+     * Handles request. Passes request message to handler if exists.
      * @param {Message} message
      */
     Client.prototype.handleRequest = function(message) {
         var that = this;
         var handler = this.handlers[message.name];
+
+        if (!handler)
+            return;
 
         var callback = function(err, data) {
             var responseMessage = Message.create({
@@ -179,7 +182,7 @@
 
 
     /**
-     *
+     * Handles response. Clears timeout and executes callback.
      * @param {Message} message
      */
     Client.prototype.handleResponse = function(message) {
@@ -237,7 +240,7 @@
 
 
     /**
-     *
+     * Generate randon string, default length is 6.
      * @param {number=} opt_length
      * @return {string}
      */
