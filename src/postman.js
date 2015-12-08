@@ -1,9 +1,6 @@
 (function() {
-    window.postman = {};
-
+    var postman = window.postman = {};
     var clients = {};
-    var callbacks = {};
-    var timeoutHandlers = {};
 
 
     /**
@@ -15,6 +12,23 @@
      */
     postman.createClient = function(contentWindow, domain, opt_timeout) {
         return new Client(contentWindow, domain, opt_timeout);
+    };
+
+
+    /**
+     * Gets a client with content window.
+     * @param {Window} contentWindow
+     * @return {?Client}
+     */
+    postman.getClientByWindow = function(contentWindow) {
+        var client;
+
+        for (var clientId in clients) {
+            if (clients[clientId].contentWindow == contentWindow)
+                client = clients[clientId];
+        }
+
+        return client;
     };
 
 
@@ -85,6 +99,9 @@
         this.handlers = {};
         this.timeoutDuration = opt_timeout || 5000;
 
+        this.callbacks = {};
+        this.timeoutHandlers = {};
+
         clients[this.id] = this;
     }
 
@@ -105,6 +122,8 @@
      * @param {Function} opt_callback
      */
     Client.prototype.emit = function(name, opt_data, opt_callback) {
+        var that = this;
+
         var message = Message.create({
             type: 'req',
             name: name,
@@ -112,12 +131,12 @@
         });
 
         if (opt_callback) {
-            callbacks[message.id] = opt_callback;
-            timeoutHandlers[message.id] = setTimeout(function() {
-                var callback = callbacks[message.id];
+            this.callbacks[message.id] = opt_callback;
+            this.timeoutHandlers[message.id] = setTimeout(function() {
+                var callback = that.callbacks[message.id];
                 callback && callback(new Error('Timeout exceed.'));
-                delete callbacks[message.id];
-                delete timeoutHandlers[message.id];
+                delete that.callbacks[message.id];
+                delete that.timeoutHandlers[message.id];
             }, this.timeoutDuration);
         }
 
@@ -139,7 +158,7 @@
      *
      * @param {Message} message
      */
-    Client.prototype.handleMessage = function(message) {
+    Client.prototype.handleRequest = function(message) {
         var that = this;
         var handler = this.handlers[message.name];
 
@@ -160,29 +179,41 @@
 
 
     /**
+     *
+     * @param {Message} message
+     */
+    Client.prototype.handleResponse = function(message) {
+        var callback = this.callbacks[message.id];
+        callback && callback(message.error, message.payload);
+
+        if (this.timeoutHandlers[message.id])
+            clearTimeout(this.timeoutHandlers[message.id]);
+
+        delete this.callbacks[message.id];
+    };
+
+
+    /**
      * Listen for message events.
      */
     window.addEventListener('message', function(e) {
-        var message = Message.parse(e);
+        try {
+            var message = Message.parse(e);
+            var client = postman.getClientByWindow(e.source);
 
-        switch (message.type) {
-            case 'req':
-                for (var clientId in clients) {
-                    var client = clients[clientId];
-                    if (client.contentWindow == e.source)
-                        client.handleMessage(message);
-                }
+            if (!client)
+                return;
 
-                break;
-            case 'res':
-                var callback = callbacks[message.id];
-                callback && callback(message.error, message.payload);
-
-                if (timeoutHandlers[message.id])
-                    clearTimeout(timeoutHandlers[message.id]);
-
-                delete callbacks[message.id];
-                break;
+            switch (message.type) {
+                case 'req':
+                    client.handleRequest(message);
+                    break;
+                case 'res':
+                    client.handleResponse(message);
+                    break;
+            }
+        } catch(err) {
+            // Don't do anything
         }
     }, false)
 
