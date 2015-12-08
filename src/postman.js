@@ -97,7 +97,7 @@
         this.contentWindow = contentWindow;
         this.domain = domain;
         this.handlers = {};
-        this.timeoutDuration = opt_timeout || 5000;
+        this.timeoutDuration = opt_timeout || 10000;
 
         this.callbacks = {};
         this.timeoutHandlers = {};
