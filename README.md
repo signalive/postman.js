@@ -17,7 +17,7 @@ var client = postman.createClient(targetWindow, targetOrigin, opt_timeout);
 ```
 - **targetWindow:** Target window object.
 - **targetOrigin:** String (https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)
-- **opt_timeout:** Number in ms. Optional. Default 10 seconds.
+- **opt_timeout:** Number in ms. Optional. Default 10 seconds. Pass 0 if you want to cancel timeout.
 
 Listen for events in parent page:
 ```

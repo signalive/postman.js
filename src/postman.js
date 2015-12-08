@@ -97,7 +97,10 @@
         this.contentWindow = contentWindow;
         this.domain = domain;
         this.handlers = {};
-        this.timeoutDuration = opt_timeout || 10000;
+        this.timeoutDuration = opt_timeout;
+
+        if (!this.timeoutDuration && this.timeoutDuration !== 0)
+            this.timeoutDuration = 10000;
 
         this.callbacks = {};
         this.timeoutHandlers = {};
@@ -132,12 +135,15 @@
 
         if (opt_callback) {
             this.callbacks[message.id] = opt_callback;
-            this.timeoutHandlers[message.id] = setTimeout(function() {
-                var callback = that.callbacks[message.id];
-                callback && callback(new Error('Timeout exceed.'));
-                delete that.callbacks[message.id];
-                delete that.timeoutHandlers[message.id];
-            }, this.timeoutDuration);
+
+            if (this.timeoutDuration > 0) {
+                this.timeoutHandlers[message.id] = setTimeout(function() {
+                    var callback = that.callbacks[message.id];
+                    callback && callback(new Error('Timeout exceed.'));
+                    delete that.callbacks[message.id];
+                    delete that.timeoutHandlers[message.id];
+                }, this.timeoutDuration);
+            }
         }
 
         this.sendMessage(message);
