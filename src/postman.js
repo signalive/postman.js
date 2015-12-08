@@ -194,6 +194,24 @@
 
 
     /**
+     * Gracefully destorys itself.
+     */
+    Client.prototype.destroy = function() {
+        // Delete timeout handlers.
+        for (var messageId in this.timeoutHandlers) {
+            clearTimeout(this.timeoutHandlers[messageId]);
+        }
+
+        // Fail callback
+        for (var messageId in this.callbacks) {
+            this.callbacks[messageId](new Error('Postman client has destoyed.'));
+        }
+
+        delete clients[this.id];
+    };
+
+
+    /**
      * Listen for message events.
      */
     window.addEventListener('message', function(e) {
