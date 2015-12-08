@@ -1,7 +1,7 @@
 postman.js
 ---
 
-This library implements socket.io syntax over `window.postMessage` between top window and iframes. Written in plain javascript, no dependencies, minified file size is just 2 KB.
+This library implements socket.io syntax over `window.postMessage` between top window and iframes. It supports multiple iframes. Written in plain javascript, no dependencies, minified file size is just 2 KB.
 
 ```
 bower install postman-js
@@ -9,33 +9,39 @@ bower install postman-js
 
 Usage
 ---
-1. Include `postman.min.js` to both parent page and child page.
-2. Create communication clients
+Include `postman.min.js` to both parent page and child page.
+
+Create communication clients:
 ```
-var client = postman.createClient(targetWindow, targetOrigin, opt_timeout)`;
+var client = postman.createClient(targetWindow, targetOrigin, opt_timeout);
 ```
-- targetWindow: Target window object.
-- targetOrigin: String (https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)
-- opt_timeout: Number in ms. Default 5000 ms.
-3. Listen for events in parent page
+- **targetWindow:** Target window object.
+- **targetOrigin:** String (https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)
+- **opt_timeout:** Number in ms. Optional. Default 10 seconds.
+
+Listen for events in parent page:
 ```
 client.on('some-event', function(data) {
     console.log(data); // => {some: 'data'}
 });
+
 client.on('some-other-event', function(data, done) {
     // ...
     // You can also send acknowledges back!
     done(null, {some: 'response'});
 });
 ```
-4. Emit events from iframes
+
+Emit events from iframes:
 ```
 client.emit('some-event', {some: 'data'});
+
 client.emit('some-other-event', null, function(err, data) {
     console.log(data); // => {some: 'response'}
 });
 ```
-5. Or vice-versa.
+
+Or vice-versa.
 
 Sample
 ---
@@ -45,7 +51,7 @@ Sample
 <iframe id="iframe" src="child.html" sandbox="allow-scripts"></iframe>
 <script>
     var iframe = document.getElementById('iframe');
-    var client = postman.createClient(iframe1.contentWindow, '*');
+    var client = postman.createClient(iframe.contentWindow, '*');
     client.on('some-event', function(data, done) {
         // Do something with data
         done(null, {some: 'response'});
