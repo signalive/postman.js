@@ -265,6 +265,6 @@
         return string;
     }
 
-    if (typeof exports !== 'undefined') exports = postman;
+    if (typeof module !== 'undefined') module.exports = postman;
     if (typeof window !== 'undefined') window.postman = postman;
 })();
