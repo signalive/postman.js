@@ -1,5 +1,6 @@
 (function() {
-    var postman = window.postman = {};
+
+    var postman = {};
     var clients = {};
 
 
@@ -263,4 +264,7 @@
 
         return string;
     }
+
+    if (typeof exports !== 'undefined') exports = postman;
+    if (typeof window !== 'undefined') window.postman = postman;
 })();
