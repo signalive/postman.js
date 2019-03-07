@@ -17,19 +17,19 @@
 
 
     /**
-     * Gets a client with content window.
+     * Gets clients binded to specified content window.
      * @param {Window} contentWindow
-     * @return {?Client}
+     * @return {Array.<Client>}
      */
-    postman.getClientByWindow = function(contentWindow) {
-        var client;
+    postman.getClientsByWindow = function(contentWindow) {
+        var rv = [];
 
         for (var clientId in clients) {
             if (clients[clientId].contentWindow == contentWindow)
-                client = clients[clientId];
+                rv.push(clients[clientId]);
         }
 
-        return client;
+        return rv;
     };
 
 
@@ -227,18 +227,22 @@
     window.addEventListener('message', function(e) {
         try {
             var message = Message.parse(e);
-            var client = postman.getClientByWindow(e.source);
+            var matchedClients = postman.getClientsByWindow(e.source);
 
-            if (!client)
+            if (!matchedClients || matchedClients.length == 0)
                 return;
 
-            switch (message.type) {
-                case 'req':
-                    client.handleRequest(message);
-                    break;
-                case 'res':
-                    client.handleResponse(message);
-                    break;
+            for (var i = 0; i < matchedClients.length; i++) {
+                var client = matchedClients[i];
+
+                switch (message.type) {
+                    case 'req':
+                        client.handleRequest(message);
+                        break;
+                    case 'res':
+                        client.handleResponse(message);
+                        break;
+                }
             }
         } catch(err) {
             // Don't do anything

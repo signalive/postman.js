@@ -19,8 +19,8 @@ declare module 'postman.js' {
             on(name: string, callback: (payload: any, done: (error?: any, payload?: any) => void) => void): void;
             destroy(): void;
         }
-        
-        function getClientByWindow(targetWindow: Window): Client;
+
+        function getClientsByWindow(targetWindow: Window): Client[];
         function createClient(targetWindow: Window, targetOrigin: string, opt_timeout?: number): Client;
     }
 
