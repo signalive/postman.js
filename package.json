@@ -1,6 +1,6 @@
 {
   "name": "postman.js",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Socket.io inspired postMessage library.",
   "main": "src/postman.js",
   "dependencies": {
