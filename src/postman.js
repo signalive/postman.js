@@ -125,7 +125,7 @@
      * @param {?Object=} opt_data
      * @param {Function} opt_callback
      */
-    Client.prototype.emit = function(name, opt_data, opt_callback) {
+    Client.prototype.emit = function(name, opt_data, opt_callback, opt_timeout) {
         var that = this;
 
         var message = Message.create({
@@ -134,16 +134,19 @@
             payload: opt_data
         });
 
+
         if (opt_callback) {
             this.callbacks[message.id] = opt_callback;
 
-            if (this.timeoutDuration > 0) {
+            var timeout = isNaN(Number(opt_timeout)) ? this.timeoutDuration : Number(opt_timeout);
+
+            if (timeout > 0) {
                 this.timeoutHandlers[message.id] = setTimeout(function() {
                     var callback = that.callbacks[message.id];
                     callback && callback(new Error('Timeout exceed.'));
                     delete that.callbacks[message.id];
                     delete that.timeoutHandlers[message.id];
-                }, this.timeoutDuration);
+                }, timeout);
             }
         }
 
