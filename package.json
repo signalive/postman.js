@@ -3,9 +3,7 @@
   "version": "0.0.9",
   "description": "Socket.io inspired postMessage library.",
   "main": "src/postman.js",
-  "dependencies": {
-    "gulp": "^3.9.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-rename": "^1.2.2",
