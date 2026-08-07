@@ -17,19 +17,19 @@
 
 
     /**
-     * Gets a client with content window.
+     * Gets clients binded to specified content window.
      * @param {Window} contentWindow
-     * @return {?Client}
+     * @return {Array.<Client>}
      */
-    postman.getClientByWindow = function(contentWindow) {
-        var client;
+    postman.getClientsByWindow = function(contentWindow) {
+        var rv = [];
 
         for (var clientId in clients) {
             if (clients[clientId].contentWindow == contentWindow)
-                client = clients[clientId];
+                rv.push(clients[clientId]);
         }
 
-        return client;
+        return rv;
     };
 
 
@@ -44,6 +44,7 @@
         this.name = data.name;
         this.error = data.error;
         this.payload = data.payload;
+        this.clientId = data.clientId;
     }
 
 
@@ -58,8 +59,8 @@
 
 
     /**
-     * Creates message from event object.
-     * @param {Event} e
+     * Creates message from MessageEvent object.
+     * @param {MessageEvent} e
      * @return {Message}
      */
     Message.parse = function(e) {
@@ -77,7 +78,8 @@
             type: this.type,
             name: this.name,
             error: this.error,
-            payload: this.payload
+            payload: this.payload,
+            clientId: this.clientId
         };
 
         // TODO: _.pick
@@ -131,7 +133,8 @@
         var message = Message.create({
             type: 'req',
             name: name,
-            payload: opt_data
+            payload: opt_data,
+            clientId: this.id
         });
 
 
@@ -181,7 +184,8 @@
                 name: message.name,
                 type: 'res',
                 error: err,
-                payload: data
+                payload: data,
+                clientId: message.clientId
             });
 
             that.sendMessage(responseMessage);
@@ -199,8 +203,10 @@
         var callback = this.callbacks[message.id];
         callback && callback(message.error, message.payload);
 
-        if (this.timeoutHandlers[message.id])
+        if (this.timeoutHandlers[message.id]) {
             clearTimeout(this.timeoutHandlers[message.id]);
+            delete this.timeoutHandlers[message.id];
+        }
 
         delete this.callbacks[message.id];
     };
@@ -230,17 +236,36 @@
     window.addEventListener('message', function(e) {
         try {
             var message = Message.parse(e);
-            var client = postman.getClientByWindow(e.source);
-
-            if (!client)
-                return;
 
             switch (message.type) {
                 case 'req':
-                    client.handleRequest(message);
+                    var matchedClients = postman.getClientsByWindow(e.source);
+
+                    for (var i = 0; i < matchedClients.length; i++) {
+                        var client = matchedClients[i];
+
+                        if (!client.handlers[message.name])
+                            continue;
+
+                        try {
+                            client.handleRequest(message);
+                        } catch (err) {
+                            // Don't let one client's error block dispatch to the rest.
+                        }
+
+                        break; // Only the first client with a matching handler responds.
+                    }
                     break;
                 case 'res':
-                    client.handleResponse(message);
+                    var targetClient = clients[message.clientId];
+
+                    if (targetClient && targetClient.contentWindow == e.source) {
+                        try {
+                            targetClient.handleResponse(message);
+                        } catch (err) {
+                            // Don't let a broken callback break message handling.
+                        }
+                    }
                     break;
             }
         } catch(err) {
