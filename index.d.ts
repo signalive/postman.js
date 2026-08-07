@@ -9,6 +9,7 @@ declare module 'postman.js' {
             name?: string;
             error?: any;
             payload?: any;
+            clientId?: string;
         }
 
         class Message {
@@ -17,6 +18,7 @@ declare module 'postman.js' {
             name?: string;
             error: any;
             payload: any;
+            clientId?: string;
 
             constructor(data?: MessageData);
 

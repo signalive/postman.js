@@ -44,6 +44,7 @@
         this.name = data.name;
         this.error = data.error;
         this.payload = data.payload;
+        this.clientId = data.clientId;
     }
 
 
@@ -77,7 +78,8 @@
             type: this.type,
             name: this.name,
             error: this.error,
-            payload: this.payload
+            payload: this.payload,
+            clientId: this.clientId
         };
 
         // TODO: _.pick
@@ -131,7 +133,8 @@
         var message = Message.create({
             type: 'req',
             name: name,
-            payload: opt_data
+            payload: opt_data,
+            clientId: this.id
         });
 
 
@@ -181,7 +184,8 @@
                 name: message.name,
                 type: 'res',
                 error: err,
-                payload: data
+                payload: data,
+                clientId: message.clientId
             });
 
             that.sendMessage(responseMessage);
@@ -232,26 +236,37 @@
     window.addEventListener('message', function(e) {
         try {
             var message = Message.parse(e);
-            var matchedClients = postman.getClientsByWindow(e.source);
 
-            if (!matchedClients || matchedClients.length == 0)
-                return;
+            switch (message.type) {
+                case 'req':
+                    var matchedClients = postman.getClientsByWindow(e.source);
 
-            for (var i = 0; i < matchedClients.length; i++) {
-                var client = matchedClients[i];
+                    for (var i = 0; i < matchedClients.length; i++) {
+                        var client = matchedClients[i];
 
-                try {
-                    switch (message.type) {
-                        case 'req':
+                        if (!client.handlers[message.name])
+                            continue;
+
+                        try {
                             client.handleRequest(message);
-                            break;
-                        case 'res':
-                            client.handleResponse(message);
-                            break;
+                        } catch (err) {
+                            // Don't let one client's error block dispatch to the rest.
+                        }
+
+                        break; // Only the first client with a matching handler responds.
                     }
-                } catch (err) {
-                    // Don't let one client's error block dispatch to the rest.
-                }
+                    break;
+                case 'res':
+                    var targetClient = clients[message.clientId];
+
+                    if (targetClient && targetClient.contentWindow == e.source) {
+                        try {
+                            targetClient.handleResponse(message);
+                        } catch (err) {
+                            // Don't let a broken callback break message handling.
+                        }
+                    }
+                    break;
             }
         } catch(err) {
             // Don't do anything
