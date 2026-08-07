@@ -238,13 +238,17 @@
             for (var i = 0; i < matchedClients.length; i++) {
                 var client = matchedClients[i];
 
-                switch (message.type) {
-                    case 'req':
-                        client.handleRequest(message);
-                        break;
-                    case 'res':
-                        client.handleResponse(message);
-                        break;
+                try {
+                    switch (message.type) {
+                        case 'req':
+                            client.handleRequest(message);
+                            break;
+                        case 'res':
+                            client.handleResponse(message);
+                            break;
+                    }
+                } catch (err) {
+                    // Don't let one client's error block dispatch to the rest.
                 }
             }
         } catch(err) {
