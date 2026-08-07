@@ -58,8 +58,8 @@
 
 
     /**
-     * Creates message from event object.
-     * @param {Event} e
+     * Creates message from MessageEvent object.
+     * @param {MessageEvent} e
      * @return {Message}
      */
     Message.parse = function(e) {
