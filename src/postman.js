@@ -199,8 +199,10 @@
         var callback = this.callbacks[message.id];
         callback && callback(message.error, message.payload);
 
-        if (this.timeoutHandlers[message.id])
+        if (this.timeoutHandlers[message.id]) {
             clearTimeout(this.timeoutHandlers[message.id]);
+            delete this.timeoutHandlers[message.id];
+        }
 
         delete this.callbacks[message.id];
     };
