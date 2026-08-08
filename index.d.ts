@@ -1,28 +1,51 @@
 declare module 'postman.js' {
-    // class Message {
-    //     id: string;
-    //     type: string;
-    //     name: string;
-    //     error: Error;
-    //     payload: any;
-    //     constructor(data?: any);
-    //     static create(data?: any): Message;
-    //     static parse(event?: Event): Message;
-    //     toJSON(): string;
-    // }
-
     namespace postman {
+        type EmitCallback = (error?: any, payload?: any) => void;
+        type Handler = (payload: any, done: EmitCallback) => void;
+
+        interface MessageData {
+            id?: string;
+            type?: 'req' | 'res';
+            name?: string;
+            error?: any;
+            payload?: any;
+            clientId?: string;
+        }
+
+        class Message {
+            id: string;
+            type?: 'req' | 'res';
+            name?: string;
+            error: any;
+            payload: any;
+            clientId?: string;
+
+            constructor(data?: MessageData);
+
+            static create(opt_data?: MessageData): Message;
+            static parse(e: MessageEvent): Message;
+
+            toJSON(): string;
+        }
+
         class Client {
-            // constructor(contentWindow: Window, domain: string, timeout?: number);
-            // sendMessage(message: Message): void;
-            emit(name: string, payload?: any, callback?: (error: any, payload?: any) => void, timeout?: number): void;
-            on(name: string, callback: (payload: any, done: (error?: any, payload?: any) => void) => void): void;
+            id: string;
+            contentWindow: Window;
+            domain: string;
+            handlers: { [name: string]: Handler };
+            timeoutDuration: number;
+
+            constructor(contentWindow: Window, domain: string, opt_timeout?: number);
+
+            sendMessage(message: Message): void;
+            emit(name: string, opt_data?: any, opt_callback?: EmitCallback, opt_timeout?: number): void;
+            on(name: string, handler: Handler): void;
             destroy(): void;
         }
 
-        function getClientByWindow(targetWindow: Window): Client;
-        function createClient(targetWindow: Window, targetOrigin: string, opt_timeout?: number): Client;
+        function createClient(contentWindow: Window, domain: string, opt_timeout?: number): Client;
+        function getClientsByWindow(contentWindow: Window): Client[];
     }
 
-    export = postman
+    export = postman;
 }
