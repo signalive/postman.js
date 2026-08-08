@@ -8,10 +8,16 @@
     var iframe2 = document.getElementById('iframe2');
 
     var client1 = postman.createClient(iframe1.contentWindow, '*');
+    var client1b = postman.createClient(iframe1.contentWindow, '*'); // same window as client1, on purpose
     var client2 = postman.createClient(iframe2.contentWindow, '*');
 
     client1.on('child-to-parent-message-without-data', function() {
         console.log('Client #1: child-to-parent-message-without-data');
+    });
+
+    // Same event name as client1, bound to the same window -> should only fire once (dedupe).
+    client1b.on('child-to-parent-message-without-data', function() {
+        console.log('Client #1b: child-to-parent-message-without-data (should NOT also log from #1 above)');
     });
 
     client2.on('child-to-parent-message-without-data', function() {
@@ -36,7 +42,12 @@
     setTimeout(function() {
         client1.emit('parent-to-child', {hello: 'world'});
         client1.emit('parent-to-child-callback', {helloSiki: 'worldGotu'}, function(err, data) {
-            console.log('Child #1: parent-to-child-callback', err, data);
+            console.log('Client #1: parent-to-child-callback response', JSON.stringify(data));
+        });
+
+        // Same window, different client instance -> response must come back to THIS callback, not client1's.
+        client1b.emit('parent-to-child-callback', {helloSiki: 'client1b-worldGotu'}, function(err, data) {
+            console.log('Client #1b: parent-to-child-callback response', JSON.stringify(data));
         });
     }, 1000);
 </script>

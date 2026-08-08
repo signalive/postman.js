@@ -15,7 +15,7 @@
     });
     client.on('parent-to-child-callback', function(data, done) {
         console.log('Child: parent-to-child-callback', data);
-        done(null, {anani: 's2m'});
+        done(null, {echo: data});
     });
 
 </script>
